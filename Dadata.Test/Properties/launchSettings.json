@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DadataCore.Test": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false,
+      "sqlDebugging": false,
+      "nativeDebugging": false
+    }
+  }
+}
