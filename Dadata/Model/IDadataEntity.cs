@@ -1,5 +1,4 @@
-﻿using System;
-namespace Dadata.Model
+﻿namespace Dadata.Model
 {
     /// <summary>
     /// DaData data entity (address, phone etc).

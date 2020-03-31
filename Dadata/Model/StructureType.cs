@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Dadata.Model
+﻿namespace Dadata.Model
 {
     /// <summary>
     /// Entity types, as supported by DaData.

@@ -1,9 +1,9 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Dadata.Model
 {
-    public class Birthdate: IDadataEntity
+    public class Birthdate : IDadataEntity
     {
         public string source { get; set; }
         [JsonConverter(typeof(DateRuConverter))]

@@ -7,12 +7,14 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Dadata {
+namespace Dadata
+{
 
 	/// <summary>
 	/// DaData Clean API (https://dadata.ru/api/clean/)
 	/// </summary>
-	public class CleanClient : ClientBase {
+	public class CleanClient : ClientBase
+	{
 
 		const string BASE_URL = "https://dadata.ru/api/v2/clean";
 
@@ -32,7 +34,8 @@ namespace Dadata {
 		};
 
 
-		public CleanClient(string token, string secret, string baseUrl = BASE_URL) : base(token, baseUrl) {
+		public CleanClient(string token, string secret, string baseUrl = BASE_URL) : base(token, baseUrl)
+		{
 			this.secret = secret;
 			// all response data entities look the same (IDadataEntity), 
 			// need to manually convert them to specific types (address, phone etc)
@@ -41,7 +44,8 @@ namespace Dadata {
 			serializer.Converters.Add(new StringEnumConverter());
 		}
 
-		public async Task<T> Clean<T>(string source) where T : IDadataEntity {
+		public async Task<T> Clean<T>(string source) where T : IDadataEntity
+		{
 			// infer structure from target entity type
 			var structure = new List<StructureType>(
 				new StructureType[] { TYPE_TO_STRUCTURE[typeof(T)] }
@@ -52,7 +56,8 @@ namespace Dadata {
 			return (T)response[0];
 		}
 
-		public async Task<IList<IDadataEntity>> Clean(IEnumerable<StructureType> structure, IEnumerable<string> data) {
+		public async Task<IList<IDadataEntity>> Clean(IEnumerable<StructureType> structure, IEnumerable<string> data)
+		{
 			var request = new CleanRequest(structure, data);
 			var httpRequest = CreateHttpRequest();
 			httpRequest = SerializeRequest(httpRequest, request);
@@ -61,16 +66,20 @@ namespace Dadata {
 			return response.data[0];
 		}
 
-		protected HttpWebRequest CreateHttpRequest() {
+		protected HttpWebRequest CreateHttpRequest()
+		{
 			var request = base.CreateHttpRequest(verb: "POST", url: baseUrl);
-			if (secret != null) {
+			if (secret != null)
+			{
 				request.Headers.Add("X-Secret", this.secret);
 			}
 			return request;
 		}
 
-		protected override async Task<T> Deserialize<T>(HttpWebResponse httpResponse) {
-			using (var r = new StreamReader(httpResponse.GetResponseStream())) {
+		protected override async Task<T> Deserialize<T>(HttpWebResponse httpResponse)
+		{
+			using (var r = new StreamReader(httpResponse.GetResponseStream()))
+			{
 				string responseText = await r.ReadToEndAsync();
 				return JsonConvert.DeserializeObject<T>(responseText, this.converter);
 			}
