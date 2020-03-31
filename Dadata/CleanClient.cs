@@ -55,7 +55,7 @@ namespace Dadata {
 		public async Task<IList<IDadataEntity>> Clean(IEnumerable<StructureType> structure, IEnumerable<string> data) {
 			var request = new CleanRequest(structure, data);
 			var httpRequest = CreateHttpRequest();
-			httpRequest = Serialize(httpRequest, request);
+			httpRequest = SerializeRequest(httpRequest, request);
 			var httpResponse = (HttpWebResponse)await httpRequest.GetResponseAsync();
 			var response = await Deserialize<CleanResponse>(httpResponse);
 			return response.data[0];
