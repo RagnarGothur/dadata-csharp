@@ -1,4 +1,5 @@
 ﻿using Dadata.Model;
+using RequestLimiter;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,19 +12,35 @@ namespace Dadata
 {
     public abstract class ClientBase
     {
-        protected string token;
-        protected string baseUrl;
-        protected JsonSerializer serializer;
+        protected const uint defaultMaxRequestsPerSecond = 20;
+        protected IRequestExecutor requestExecutor
+        { get; set; }
+        protected uint maxRequestsPerSecond
+        { get; set; }
+        protected string token
+        { get; set; }
+        protected string baseUrl
+        { get; set; }
+        protected JsonSerializer serializer
+        { get; set; }
 
         static ClientBase()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
         }
 
-        public ClientBase(string token, string baseUrl)
+        public ClientBase(string token, string baseUrl, uint maxRequestsPerSecond = defaultMaxRequestsPerSecond, IRequestExecutor requestExecutor = null)
         {
             this.token = token;
             this.baseUrl = baseUrl;
+            this.maxRequestsPerSecond = maxRequestsPerSecond;
+
+            if (requestExecutor == null)
+            {
+                requestExecutor = DefaultExecutor.Instance;
+            }
+
+            this.requestExecutor = requestExecutor;
             this.serializer = new JsonSerializer();
         }
 
@@ -31,7 +48,7 @@ namespace Dadata
         {
             var queryString = SerializeParameters(parameters);
             var httpRequest = CreateHttpRequest(verb: "GET", method: method, entity: entity, queryString: queryString);
-            var httpResponse = await httpRequest.GetResponseAsync();
+            var httpResponse = this.requestExecutor.ExecuteWithMaxReqPerSecond(httpRequest, this.maxRequestsPerSecond);
             return await Deserialize<T>((HttpWebResponse)httpResponse);
         }
 
@@ -39,7 +56,7 @@ namespace Dadata
         {
             var httpRequest = CreateHttpRequest(verb: "POST", method: method, entity: entity);
             httpRequest = SerializeRequest(httpRequest, request);
-            var httpResponse = await httpRequest.GetResponseAsync();
+            var httpResponse = this.requestExecutor.ExecuteWithMaxReqPerSecond(httpRequest, this.maxRequestsPerSecond);
             return await Deserialize<T>((HttpWebResponse)httpResponse);
         }
 

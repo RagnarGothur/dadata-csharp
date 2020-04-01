@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Dadata.Model
+﻿namespace Dadata.Model
 {
-    public class SuggestBankRequest: SuggestRequest
+    public class SuggestBankRequest : SuggestRequest
     {
         public PartyStatus[] status { get; set; }
         public BankType[] type { get; set; }

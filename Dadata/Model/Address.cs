@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Dadata.Model
 {
     /// <summary>
     /// Postal address.
     /// </summary>
-    public class Address: IDadataEntity
+    public class Address : IDadataEntity
     {
         public string source { get; set; }
         public string result { get; set; }
