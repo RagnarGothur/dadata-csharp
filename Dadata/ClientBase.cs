@@ -37,7 +37,7 @@ namespace Dadata
 
             if (requestExecutor == null)
             {
-                requestExecutor = new DefaultExecutor();
+                requestExecutor = DefaultExecutor.Instance;
             }
 
             this.requestExecutor = requestExecutor;

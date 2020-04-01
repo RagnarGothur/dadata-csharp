@@ -9,9 +9,10 @@ namespace Dadata
     /// </summary>
     public class SuggestClient : ClientBase
     {
+        protected new const uint maxRequestsPerSecond = 20;
         const string BASE_URL = "https://suggestions.dadata.ru/suggestions/api/4_1/rs";
 
-        public SuggestClient(string token, string baseUrl = BASE_URL) : base(token, baseUrl) { }
+        public SuggestClient(string token, string baseUrl = BASE_URL) : base(token, baseUrl, maxRequestsPerSecond) { }
 
         public async Task<SuggestResponse<Address>> SuggestAddress(string query, int count = 5)
         {

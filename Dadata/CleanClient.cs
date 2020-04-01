@@ -15,8 +15,8 @@ namespace Dadata
 	/// </summary>
 	public class CleanClient : ClientBase
 	{
-
 		const string BASE_URL = "https://dadata.ru/api/v2/clean";
+		protected new const uint maxRequestsPerSecond = 20;
 
 		string secret;
 		CustomCreationConverter<IDadataEntity> converter;
@@ -34,7 +34,7 @@ namespace Dadata
 		};
 
 
-		public CleanClient(string token, string secret, string baseUrl = BASE_URL) : base(token, baseUrl)
+		public CleanClient(string token, string secret, string baseUrl = BASE_URL) : base(token, baseUrl, maxRequestsPerSecond)
 		{
 			this.secret = secret;
 			// all response data entities look the same (IDadataEntity), 

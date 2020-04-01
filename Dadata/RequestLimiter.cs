@@ -13,65 +13,71 @@ namespace RequestLimiter
 {
     internal struct Key
     {
-        private string Method
+        private string _method
         { get; }
 
-        private string Entity
+        private string _entity
         { get; }
 
         internal Key(string method, string entity)
         {
-            this.Method = method;
-            this.Entity = entity;
+            this._method = method;
+            this._entity = entity;
         }
     }
 
     //TODO: move it to another project
-    public class OperationsLimiter
+    public class RequestLimiter
     {
         private const uint defaultLimit = 20;
 
-        private readonly Mutex Mutex = new Mutex();
-        private readonly Queue<DateTime> Expirations = new Queue<DateTime>();
+        private readonly Mutex mutex = new Mutex();
+        private readonly Queue<DateTime> expirations = new Queue<DateTime>();
 
         public void WaitForAllowing(uint maxReqPerSecond = defaultLimit)
         {
-            Mutex.WaitOne();
+            mutex.WaitOne();
 
             //Remove expired info
-            while (Expirations.Count > 0 && ((DateTime.Now - Expirations.Peek()) > TimeSpan.FromSeconds(1)))
+            while (expirations.Count > 0 && ((DateTime.Now - expirations.Peek()) > TimeSpan.FromSeconds(1)))
             {
-                Expirations.Dequeue();
+                expirations.Dequeue();
             }
 
             //Check whether there is place for another one
-            if (Expirations.Count < maxReqPerSecond)
+            if (expirations.Count < maxReqPerSecond)
             {
-                Expirations.Enqueue(DateTime.Now);
+                expirations.Enqueue(DateTime.Now);
             }
             else
             {
-                Thread.Sleep(Expirations.Peek() - DateTime.Now);
+                Thread.Sleep(expirations.Peek() - DateTime.Now);
                 WaitForAllowing(maxReqPerSecond);
             }
 
-            Mutex.ReleaseMutex();
+            mutex.ReleaseMutex();
         }
     }
 
     public class DefaultExecutor : IRequestExecutor
     {
-        private static readonly Dictionary<Key, OperationsLimiter> requestLimitGuard;
+        private static readonly Lazy<DefaultExecutor> instanceHolder =
+            new Lazy<DefaultExecutor>(() => new DefaultExecutor(), LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static readonly Lazy<Dictionary<Key, RequestLimiter>> requestLimitGuard =
+            new Lazy<Dictionary<Key, RequestLimiter>>(() => new Dictionary<Key, RequestLimiter>(), LazyThreadSafetyMode.ExecutionAndPublication);
+
         private static readonly Mutex mutex = new Mutex();
 
-        static DefaultExecutor()
+        public static DefaultExecutor Instance
         {
-            requestLimitGuard = new Dictionary<Key, OperationsLimiter>();
+            get { return instanceHolder.Value; }
         }
 
         public HttpWebResponse Execute(HttpWebRequest request)
         {
-            OperationsLimiter requestLimiter = GetRequestLimiter(request);
+            RequestLimiter requestLimiter = GetRequestLimiter(request);
+
             //Blocks thread until another request is allowed
             requestLimiter.WaitForAllowing();
             return (HttpWebResponse)request.GetResponse();
@@ -81,14 +87,14 @@ namespace RequestLimiter
         {
             if (maxReqPerSecond == 0) throw new ArgumentException();
 
-            OperationsLimiter requestLimiter = GetRequestLimiter(request);
+            RequestLimiter requestLimiter = GetRequestLimiter(request);
 
             //Blocks thread until another request is allowed
             requestLimiter.WaitForAllowing(maxReqPerSecond);
             return this.Execute(request);
         }
 
-        internal static OperationsLimiter GetRequestLimiter(HttpWebRequest request)
+        internal static RequestLimiter GetRequestLimiter(HttpWebRequest request)
         {
             var uriParts = request.RequestUri.AbsoluteUri.Split('/');
             string entity = uriParts[uriParts.Length - 1];
@@ -97,17 +103,17 @@ namespace RequestLimiter
             Key key = new Key(method, entity);
 
             mutex.WaitOne();
-            OperationsLimiter requestLimiter;
+            RequestLimiter requestLimiter;
             try
             {
-                requestLimiter = DefaultExecutor.requestLimitGuard[key];
+                requestLimiter = DefaultExecutor.requestLimitGuard.Value[key];
             }
             //Fill requestLimitGuard with requestLimiter if it not exists
             //Maybe should be in another function
             catch (KeyNotFoundException)
             {
-                requestLimiter = new OperationsLimiter();
-                DefaultExecutor.requestLimitGuard.Add(key, requestLimiter);
+                requestLimiter = new RequestLimiter();
+                DefaultExecutor.requestLimitGuard.Value.Add(key, requestLimiter);
             }
             mutex.ReleaseMutex();
 
