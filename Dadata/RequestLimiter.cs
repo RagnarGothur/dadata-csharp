@@ -11,18 +11,51 @@ public interface IRequestExecutor
 
 namespace RequestLimiter
 {
-    internal struct Key
+    internal struct Key : IEquatable<Key>
     {
-        private string _method
+        private string Method
         { get; }
 
-        private string _entity
+        private string Entity
+        { get; }
+
+        private int HashCode
         { get; }
 
         internal Key(string method, string entity)
         {
-            this._method = method;
-            this._entity = entity;
+            this.Method = method;
+            this.Entity = entity;
+            this.HashCode = (method + entity).GetHashCode();
+        }
+
+        public bool Equals(Key other)
+        {
+            return (this.Entity == other.Entity && this.Method == other.Method);
+        }
+
+        public override bool Equals(Object obj)
+        {
+            if (obj == null)
+                return false;
+
+            Key keyObj;
+
+            try
+            {
+                keyObj = (Key)obj;
+            }
+            catch (InvalidCastException)
+            {
+                return false;
+            }
+
+            return Equals(keyObj);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.HashCode;
         }
     }
 
