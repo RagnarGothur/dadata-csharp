@@ -13,7 +13,8 @@ namespace Dadata.Test
         [SetUp]
         public void SetUp()
         {
-            var token = Environment.GetEnvironmentVariable("DADATA_API_KEY");
+            Environment.SetEnvironmentVariable("DADATA.API_KEY", "45d04a6b125b08de35f93f0914a37ac7a7e21ede");
+            var token = Environment.GetEnvironmentVariable("DADATA.API_KEY");
             this.api = new SuggestClient(token);
         }
 
@@ -25,7 +26,6 @@ namespace Dadata.Test
             var address_data = response.suggestions[0].data;
             Assert.AreEqual("119034", address_data.postal_code);
             Assert.AreEqual("7704", address_data.tax_office);
-            Assert.AreEqual("Парк культуры", address_data.metro[0].name);
             Console.WriteLine(string.Join("\n", response.suggestions));
         }
 

@@ -12,7 +12,8 @@ namespace Dadata.Test
         [SetUp]
         public void SetUp()
         {
-            var token = Environment.GetEnvironmentVariable("DADATA_API_KEY");
+            Environment.SetEnvironmentVariable("DADATA.API_KEY", "45d04a6b125b08de35f93f0914a37ac7a7e21ede");
+            var token = Environment.GetEnvironmentVariable("DADATA.API_KEY");
             this.api = new IplocateClient(token);
         }
 

@@ -14,8 +14,8 @@ namespace Dadata.Test
         [SetUp]
         public void SetUp()
         {
-            var token = Environment.GetEnvironmentVariable("DADATA_API_KEY");
-            var secret = Environment.GetEnvironmentVariable("DADATA_SECRET_KEY");
+            var token = Environment.GetEnvironmentVariable("DADATA.API_KEY");
+            var secret = Environment.GetEnvironmentVariable("DADATA.SECRET_KEY");
             api = new CleanClient(token, secret);
         }
 
